@@ -6,6 +6,10 @@ Version: 1.0
 Author: YoH
 */
 
+function line_broadcast_section_callback() {
+    echo '1. ทำการออก Messaging API ในไลน์ และนำมากรอกในช่อง Access Token <br>';
+    echo '2. ทำการสร้างกลุ่ม Audience ที่ต้องการ และนำรหัสมาใส่ในหมวดหมู่ที่ต้องการ';
+}
 // Callback to print an input field for Audience Group ID for a specific category
 function line_broadcast_category_audience_id_field_callback($args) {
     $category_id = $args['category_id'];
