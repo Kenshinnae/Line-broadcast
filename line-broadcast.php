@@ -6,6 +6,10 @@ Version: 1.0
 Author: YoH
 */
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 function line_broadcast_section_callback() {
     echo '1. ทำการออก Messaging API ในไลน์ และนำมากรอกในช่อง Access Token <br>';
     echo '2. ทำการสร้างกลุ่ม Audience ที่ต้องการ และนำรหัสมาใส่ในหมวดหมู่ที่ต้องการ';
