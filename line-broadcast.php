@@ -15,12 +15,15 @@ function line_broadcast_category_audience_id_field_callback($args) {
     $category_id = $args['category_id'];
     $audience_id = get_option('line_broadcast_audience_id_' . $category_id);
     echo '<input type="text" id="line_broadcast_audience_id_' . $category_id . '" name="line_broadcast_audience_id_' . $category_id . '" value="' . esc_attr($audience_id) . '" />';
+    echo '<span style="font-size:12px;margin-left:10px">กลุ่มลูกค้าเจาะจงตามหมวดหมู่</span>';
 }
 function line_broadcast_access_token_field_callback() {
     echo '<input type="text" id="line_broadcast_access_token" name="line_broadcast_access_token" value="' . esc_attr(get_option('line_broadcast_access_token')) . '" />';
+    echo '<span style="font-size:12px;margin-left:10px">Access token จากการออก Messaging API</span>';
 }
 function line_broadcast_audience_group_id_field_callback() {
     echo '<input type="text" id="line_broadcast_audience_group_id" name="line_broadcast_audience_group_id" value="' . esc_attr(get_option('line_broadcast_audience_group_id')) . '" />';
+    echo '<span style="font-size:12px;margin-left:10px">กลุ่มลูกค้าทั่วไปไม่เจาะจงตามหมวดหมู่</span>';
 }
 
 // Function to add custom section and fields to the LINE Broadcast settings page
