@@ -8,10 +8,10 @@ jQuery(document).ready(function ($) {
     }
   }
 
-  toggleFields(); // Call on document ready
+  toggleFields(); 
 
   $("#line_broadcast_enabled").change(function () {
-    toggleFields(); // Call on checkbox state change
+    toggleFields();
   });
 });
 jQuery(document).ready(function ($) {
@@ -20,14 +20,14 @@ jQuery(document).ready(function ($) {
       var audienceGroupId = $(this).val();
       if (audienceGroupId) {
         $.ajax({
-          url: ajaxurl, // URL สำหรับการจัดการ Ajax ใน WordPress
+          url: ajaxurl, 
           type: "POST",
           data: {
-            action: "check_audience_group", // ชื่อ action ที่ WordPress จัดการ
-            audienceGroupId: audienceGroupId, // ID ของ audience group
+            action: "check_audience_group", 
+            audienceGroupId: audienceGroupId, 
           },
           success: function (response) {
-            console.log(response); // ตรวจสอบโครงสร้างข้อมูล response
+            console.log(response);
             if (
               response.success &&
               response.data &&

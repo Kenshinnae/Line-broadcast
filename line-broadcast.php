@@ -30,30 +30,24 @@ function line_broadcast_add_meta_box() {
 add_action('add_meta_boxes', 'line_broadcast_add_meta_box');
 
 function line_broadcast_meta_box_callback($post) {
-    // ใช้ nonce สำหรับการยืนยัน
-    wp_nonce_field('line_broadcast_nonce', 'line_broadcast_nonce_field');
 
-    // ตรวจสอบการตั้งค่าเก่า
+    wp_nonce_field('line_broadcast_nonce', 'line_broadcast_nonce_field');
     $line_broadcast_enabled = get_post_meta($post->ID, '_line_broadcast_enabled', true);
     $selected_audience = get_post_meta($post->ID, '_line_broadcast_audience', true);
     $subscription_period = get_post_meta($post->ID, '_line_broadcast_subscription_period', true);
 
     $access_token = get_option('line_broadcast_access_token');
     if (empty($access_token)) {
-        // Display warning message and link to settings page if no Access Token is found
         echo '<p>ยังไม่ได้ระบุ Token. <a href="options-general.php?page=line_broadcast_settings">คลิกเพื่อระบุ</a></p>';
     }
     else{
-        // Checkbox สำหรับเปิดใช้งานการส่งข้อความ
     echo '<p>';
     echo '<input type="checkbox" id="line_broadcast_enabled" name="line_broadcast_enabled" value="1" ' . checked(1, $line_broadcast_enabled, false) . '/>';
     echo '<label for="line_broadcast_enabled">' . __('Enable LINE Broadcast', 'line-broadcast') . '</label>';
     echo '</p>';
 
-    // ดึงรายชื่อกลุ่ม audience
     $audience_groups = fetch_line_audience_groups();
     
-    // Dropdown สำหรับเลือกกลุ่ม audience
     echo '<p>';
     echo '<label for="line_broadcast_audience">' . __('Audience Group:', 'line-broadcast') . '</label>';
     echo '<select id="line_broadcast_audience" name="line_broadcast_audience">';
@@ -80,17 +74,15 @@ function line_broadcast_meta_box_callback($post) {
     
 }
 function line_broadcast_save_postdata($post_id) {
-    // Check nonce
+
     if (!isset($_POST['line_broadcast_nonce_field']) || !wp_verify_nonce($_POST['line_broadcast_nonce_field'], 'line_broadcast_nonce')) {
         return;
     }
 
-    // Check user's permission
     if (!current_user_can('edit_post', $post_id)) {
         return;
     }
 
-    // Update settings
     if (isset($_POST['line_broadcast_enabled'])) {
         update_post_meta($post_id, '_line_broadcast_enabled', $_POST['line_broadcast_enabled']);
     } else {
@@ -103,7 +95,6 @@ function line_broadcast_save_postdata($post_id) {
         delete_post_meta($post_id, '_line_broadcast_audience');
     }
 
-    // Save Subscription Period
     if (isset($_POST['line_broadcast_subscription_period'])) {
         update_post_meta($post_id, '_line_broadcast_subscription_period', $_POST['line_broadcast_subscription_period']);
     } else {
@@ -137,7 +128,7 @@ function fetch_line_audience_groups() {
     ));
 
     if (is_wp_error($response)) {
-        return array(); // Return empty array if there's an error
+        return array();
     }
 
     $body = wp_remote_retrieve_body($response);
@@ -146,17 +137,14 @@ function fetch_line_audience_groups() {
     if (isset($data['audienceGroups'])) {
         return $data['audienceGroups'];
     } else {
-        return array(); // Return empty array if no audience groups found
+        return array(); 
     }
 }
 
-
-// Function to add custom section and fields to the LINE Broadcast settings page
 function add_line_broadcast_settings() {
-    // Register settings to save the data
+
     register_setting('line_broadcast_settings_group', 'line_broadcast_access_token');
 
-    // Add the section to the LINE Broadcast settings page in admin panel
     add_settings_section(
         'line_broadcast_settings_section',
         'LINE Broadcast Settings',
@@ -164,7 +152,6 @@ function add_line_broadcast_settings() {
         'line_broadcast_settings'
     );
 
-    // Add fields to the section
     add_settings_field(
         'line_broadcast_access_token_field',
         'LINE Bot Access Token',
@@ -178,19 +165,18 @@ function add_line_broadcast_settings() {
 add_action('admin_init', 'add_line_broadcast_settings');
 function add_line_broadcast_menu_page() {
     add_menu_page(
-        'Line Broadcast Settings',   // Page title
-        'Line Broadcast',            // Menu title
-        'manage_options',            // Capability required to access menu
-        'line_broadcast_settings',   // Menu slug
-        'line_broadcast_settings_page_callback', // Callback function to display page content
-        'dashicons-email-alt',       // Icon
-        30                           // Position
+        'Line Broadcast Settings',   
+        'Line Broadcast',           
+        'manage_options',
+        'line_broadcast_settings',
+        'line_broadcast_settings_page_callback',
+        'dashicons-email-alt',
+        30 
     );
 }
 
 add_action('admin_menu', 'add_line_broadcast_menu_page');
 
-// Callback function to display the LINE Broadcast settings page
 function line_broadcast_settings_page_callback() {
     ?>
     <div class="wrap">
@@ -209,29 +195,23 @@ add_action('transition_post_status', 'broadcast_new_post_to_line', 10, 3);
 
 function broadcast_new_post_to_line($new_status, $old_status, $post) {
  
-   // Check if LINE Broadcast is enabled for the post
    $line_broadcast_enabled = get_post_meta($post->ID, '_line_broadcast_enabled', true);
    $selected_audience = get_post_meta($post->ID, '_line_broadcast_audience', true);
 	$audience_count = get_audience_count($selected_audience);
 
-   // If LINE Broadcast is not enabled or no audience is selected, do not proceed
    if ('1' !== $line_broadcast_enabled || empty($selected_audience)) {
        return;
    }
 
-   // Get LINE Bot Access Token from settings
    $access_token = get_option('line_broadcast_access_token');
 
-   // Ensure the access token is available
    if (empty($access_token)) {
        error_log('LINE Broadcast: Access token is not set.');
        return;
    }
-            // สร้างและส่งข้อความไปยัง LINE ใช้ $audience_group_id สำหรับกำหนดกลุ่ม audience
             $title = get_the_title($post->ID);
             $permalink = get_permalink($post->ID);
             $excerpt = get_the_excerpt($post->ID);
-            // Prepare data for Flex message
             $flex_message = array(
                 "type" => "bubble",
                 "hero" => array(
@@ -278,13 +258,9 @@ function broadcast_new_post_to_line($new_status, $old_status, $post) {
                 )
             );
 
-            // Convert Flex message array to JSON
             $json_message = json_encode($flex_message);
-
-            // LINE API endpoint
             $line_api_endpoint = 'https://api.line.me/v2/bot/message/narrowcast';
             $subscription_period_meta = get_post_meta($post->ID, '_line_broadcast_subscription_period', true);
-            // Assuming $subscription_period_meta is a string like "day_7_to_day_30"
             switch ($subscription_period_meta) {
                 case 'day_0_to_day_7':
                     $gte = 'day_0';
@@ -312,7 +288,6 @@ function broadcast_new_post_to_line($new_status, $old_status, $post) {
                     break;
             }
             
-            // Data for broadcasting with audience recipient
             $broadcast_data = [
         'messages' => [
             [
@@ -327,7 +302,6 @@ function broadcast_new_post_to_line($new_status, $old_status, $post) {
         ],
     ];
 
-    // ตัดสินใจเพิ่ม filter ตามจำนวน audience
     if ($audience_count >= 100 && !empty($gte) && !empty($lt)) {
         $broadcast_data['filter'] = [
             'demographic' => [
@@ -342,7 +316,7 @@ function broadcast_new_post_to_line($new_status, $old_status, $post) {
             ],
         ];
     }
-            // Send the JSON message to LINE API endpoint for broadcasting
+
             $response = wp_remote_post($line_api_endpoint, array(
                 'headers' => array(
                     'Content-Type' => 'application/json',
@@ -351,12 +325,11 @@ function broadcast_new_post_to_line($new_status, $old_status, $post) {
                 'body' => json_encode($broadcast_data),
             ));
 
-            // Check for errors
             if (is_wp_error($response)) {
                 $error_message = $response->get_error_message();
                 error_log("Failed to broadcast to LINE: $error_message");
             } else {
-                // Broadcast successful
+
             }
             $response_code = wp_remote_retrieve_response_code($response);
                 if ($response_code != 200) {
@@ -390,7 +363,7 @@ function get_audience_count($audienceGroupId) {
     }
 }
 
-
+// ส่ง audienceCount กลับไปยัง JavaScript
 function line_broadcast_check_audience_group() {
     
     $audienceGroupId = isset($_POST['audienceGroupId']) ? sanitize_text_field($_POST['audienceGroupId']) : '';
@@ -405,10 +378,10 @@ function line_broadcast_check_audience_group() {
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
         $audienceCount = isset($data['audienceGroup']['audienceCount']) ? $data['audienceGroup']['audienceCount'] : null;
-        wp_send_json_success(array('audienceCount' => $audienceCount)); // ส่ง audienceCount กลับไปยัง JavaScript
+        wp_send_json_success(array('audienceCount' => $audienceCount)); 
     } else {
         wp_send_json_error();
     }
 }
 add_action('wp_ajax_check_audience_group', 'line_broadcast_check_audience_group');
-add_action('wp_ajax_nopriv_check_audience_group', 'line_broadcast_check_audience_group'); // ถ้าต้องการให้ผู้ที่ไม่ได้ login เข้าถึง
+add_action('wp_ajax_nopriv_check_audience_group', 'line_broadcast_check_audience_group'); 
